@@ -33,4 +33,4 @@ export async function api(path, { method = 'GET', body, timeout = 70_000 } = {})
 /* built-in images are paths on the public site ("img/hero.jpg"); uploads are data: URLs */
 export const siteUrl = u => !u ? '' : /^(data:image\/|https?:)/i.test(u) ? u : `${SITE_URL}/${String(u).replace(/^\/+/, '')}`;
 
-export const money = n => '₹' + Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+export const money = n => '$' + Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });   // $150,000

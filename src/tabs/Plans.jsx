@@ -9,7 +9,7 @@ import { Empty, Field, missing, useUi } from '../lib/ui.jsx';
 const CARD = [
   ['name', 'Plan name'], ['duration', 'Access label (e.g. 45 days access)', 'text', { req: true }],
   ['durationDays', 'Duration (days)', 'number', { req: true, hint: 'How long the app subscription lasts.' }],
-  ['price', 'Price (₹)', 'number', { req: true }], ['was', 'Old price (₹) — optional', 'number'],
+  ['price', 'Price ($)', 'number', { req: true }], ['was', 'Old price ($) — optional', 'number'],
   ['features', 'Features (one per line)', 'lines'], ['note', 'Description', 'textarea'],
   ['flag', 'Ribbon text'], ['sub', 'Highlight text'],
   ['tone', 'Header colour', 'select', { options: ['grey', 'blue', 'pink'] }], ['dark', 'Featured (dark card)', 'check'],
