@@ -53,7 +53,7 @@ const TABS = [
     () => <Enrollments />],
   ['job-enquiries', 'Job Enquiries', 'Sent from the “Job Enquiry” button on the home page banner.', BriefcaseMedical,
     () => <Enquiries key="job" kind="job" />],
-  ['guidance-enquiries', 'Guidance Enquiries', 'Sent from “Request Guidance” on the Contact page.', Compass,
+  ['guidance-enquiries', 'Guidance Enquiries', 'Sent from the “Guidance Request” form (home page banner and Contact page).', Compass,
     () => <Enquiries key="guidance" kind="guidance" />],
 ];
 

@@ -4,12 +4,11 @@ import { RefreshCw } from 'lucide-react';
 import { api } from '../lib/api.js';
 import { Empty } from '../lib/ui.jsx';
 
-const COLUMNS = {
-  job: [['name', 'Full Name'], ['qualification', 'Qualification'], ['experience', 'Years of Experience'], ['phone', 'Contact Number'],
-    ['whatsapp', 'WhatsApp Number'], ['specialization', 'Gulf Licensing Exam Qualified Field / Specialization']],
-  guidance: [['name', 'Full Name'], ['qualification', 'Qualification'], ['phone', 'Contact Number'], ['whatsapp', 'WhatsApp Number'],
-    ['requirement', 'Guidance Requirement']],
-};
+const JOB_COLUMNS = [['name', 'Full Name'], ['qualification', 'Qualification'], ['experience', 'Years of Experience'], ['phone', 'Contact Number'],
+  ['specialization', 'Gulf Licensing Examination Qualified Field / Medical Specialization']];
+// guidance requests carry the same details plus an optional message (requests sent before that change lack some: shown as —)
+const COLUMNS = { job: JOB_COLUMNS, guidance: [...JOB_COLUMNS, ['requirement', 'Guidance Requirement']] };
+const blank = v => v === undefined || v === null || v === '';
 const NAME = { job: 'job enquiries', guidance: 'guidance enquiries' };
 const when = d => new Date(d).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' });
 
@@ -45,7 +44,7 @@ export default function Enquiries({ kind }) {
                 <tr key={r.id} className="align-top hover:bg-mint/40">
                   {COLUMNS[kind].map(([k]) => (
                     <td key={k} className={`px-5 py-3.5 ${k === 'requirement' ? 'min-w-[280px] whitespace-pre-line break-words' : ''}`}>
-                      {k === 'phone' || k === 'whatsapp' ? <a href={k === 'phone' ? `tel:${r[k]}` : `https://wa.me/${String(r[k]).replace(/\D/g, '')}`} target={k === 'whatsapp' ? '_blank' : undefined} rel="noopener" className="whitespace-nowrap hover:underline">{r[k]}</a> : r[k]}
+                      {blank(r[k]) ? <span className="text-charcoal/35">—</span> : k === 'phone' ? <a href={`tel:${r[k]}`} className="whitespace-nowrap hover:underline">{r[k]}</a> : r[k]}
                     </td>
                   ))}
                   <td className="whitespace-nowrap px-5 py-3.5">{when(r.date)}</td>
