@@ -2,13 +2,14 @@
    asks before unsaved edits are thrown away. When the token expires the sign-in comes back over the dashboard,
    so the draft on screen survives — sign in again, then press Save. */
 import { useEffect, useState } from 'react';
-import { BadgeDollarSign, CircleHelp, ExternalLink, GraduationCap, Image, Inbox as InboxIcon, LogOut, Menu, MessageSquareHeart, MessageSquareQuote, Receipt, Sparkles, X } from 'lucide-react';
+import { BadgeDollarSign, BriefcaseMedical, CircleHelp, Compass, ExternalLink, GraduationCap, Image, Inbox as InboxIcon, LogOut, Menu, MessageSquareHeart, MessageSquareQuote, Receipt, Sparkles, X } from 'lucide-react';
 import { api, events, session as store, SITE_URL as SITE } from './lib/api.js';
 import { useUi } from './lib/ui.jsx';
 import CmsEditor from './tabs/CmsEditor.jsx';
 import Plans from './tabs/Plans.jsx';
 import Inbox from './tabs/Inbox.jsx';
 import Enrollments from './tabs/Enrollments.jsx';
+import Enquiries from './tabs/Enquiries.jsx';
 
 const stars = r => `${r.name || 'New review'}  ${'★'.repeat(r.rating || 5)}`;
 const review = [['name', 'Name', 'text', { req: true }], ['role', 'Role / country'], ['rating', 'Star rating', 'stars'], ['body', 'Review', 'textarea', { req: true }]];
@@ -50,6 +51,10 @@ const TABS = [
       blank={() => ({ q: '', a: '' })} rowTitle={f => f.q || 'New question'} />],
   ['enrollments', 'Enrollments', 'Razorpay checkout transactions from the Buy Plans page.', Receipt,
     () => <Enrollments />],
+  ['job-enquiries', 'Job Enquiries', 'Sent from the “Job Enquiry” button on the home page banner.', BriefcaseMedical,
+    () => <Enquiries key="job" kind="job" />],
+  ['guidance-enquiries', 'Guidance Enquiries', 'Sent from “Request Guidance” on the Contact page.', Compass,
+    () => <Enquiries key="guidance" kind="guidance" />],
 ];
 
 export default function App() {
