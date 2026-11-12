@@ -1,7 +1,7 @@
 /* skms-backend client. Every admin call carries the session token; a 401 means it expired, and onExpired (set by
    App) brings the login back over the dashboard without throwing away unsaved edits. */
 // VITE_API_URL picks the API (http://localhost:4000 for a local backend); without it the live Render service is used
-export const API_URL = (import.meta.env.VITE_API_URL || 'https://skms-backend.onrender.com').replace(/\/+$/, '');
+export const API_URL = (import.meta.env.VITE_API_URL || 'https://skms-backend-xgcx.onrender.com').replace(/\/+$/, '');
 // VITE_SITE_URL picks the public site (http://localhost:5173 for a local frontend); built-in images like img/hero.jpg load from it
 export const SITE_URL = (import.meta.env.VITE_SITE_URL || 'https://skms-frontend.vercel.app').replace(/\/+$/, '');
 const SESSION_KEY = 'skm_admin_session';
