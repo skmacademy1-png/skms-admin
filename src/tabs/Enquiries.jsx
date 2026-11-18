@@ -1,8 +1,8 @@
 /* Job Enquiries / Guidance Enquiries sent from the website's forms, newest first — one tab per kind */
 import { useEffect, useState } from 'react';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Trash2 } from 'lucide-react';
 import { api } from '../lib/api.js';
-import { Empty } from '../lib/ui.jsx';
+import { Empty, useUi } from '../lib/ui.jsx';
 
 const JOB_COLUMNS = [['name', 'Full Name'], ['qualification', 'Qualification'], ['experience', 'Years of Experience'], ['phone', 'Contact Number'],
   ['specialization', 'Gulf Licensing Examination Qualified Field / Medical Specialization']];
@@ -15,6 +15,7 @@ const when = d => new Date(d).toLocaleString('en-GB', { dateStyle: 'medium', tim
 export default function Enquiries({ kind }) {
   const [rows, setRows] = useState(null);
   const [error, setError] = useState(null);
+  const { toast, ask } = useUi();
 
   async function load() {
     setError(null);
@@ -23,6 +24,13 @@ export default function Enquiries({ kind }) {
     setRows(r.data);
   }
   useEffect(() => { load(); }, []);
+
+  async function remove(x) {
+    if (!(await ask('Delete this enquiry?', `The enquiry from “${x.name}” is removed for good.`, 'Delete', true))) return;
+    const r = await api(`/api/admin/enquiries/${kind}/${x.id}`, { method: 'DELETE' });
+    if (!r.ok && r.status !== 404) return r.status !== 401 && toast(r.data.error || 'Could not delete this enquiry.', 'error');
+    setRows(rs => rs.filter(e => e.id !== x.id));   // 404: already gone, drop it too
+  }
 
   if (error) return <div className="a-panel"><Empty title={`Could not load ${NAME[kind]}`} text={error} /><div className="text-center"><button className="a-btn a-btn--ghost" onClick={load}>Try again</button></div></div>;
   if (!rows) return <div className="a-panel text-[13px] text-charcoal/50">Loading…</div>;
@@ -37,7 +45,7 @@ export default function Enquiries({ kind }) {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1000px] text-left text-[13px]">
             <thead className="border-b border-black/5 bg-mint/60 text-[11px] uppercase tracking-wider text-charcoal/50">
-              <tr>{[...COLUMNS[kind].map(c => c[1]), 'Submission Date'].map(h => <th key={h} className="px-5 py-3 font-medium">{h}</th>)}</tr>
+              <tr>{[...COLUMNS[kind].map(c => c[1]), 'Submission Date', ''].map(h => <th key={h} className="px-5 py-3 font-medium">{h}</th>)}</tr>
             </thead>
             <tbody className="divide-y divide-black/5">
               {rows.map(r => (
@@ -48,6 +56,9 @@ export default function Enquiries({ kind }) {
                     </td>
                   ))}
                   <td className="whitespace-nowrap px-5 py-3.5">{when(r.date)}</td>
+                  <td className="px-3 py-2">
+                    <button type="button" aria-label="Delete" title="Delete" className="rounded-full p-2 text-charcoal/35 transition hover:bg-red-50 hover:text-red-500" onClick={() => remove(r)}><Trash2 className="h-4 w-4" /></button>
+                  </td>
                 </tr>
               ))}
             </tbody>
