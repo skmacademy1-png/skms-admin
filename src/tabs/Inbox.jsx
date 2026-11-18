@@ -1,7 +1,7 @@
 /* Review Inbox: what visitors sent from "Write A Review". Approve publishes one into Student Reviews (after any
-   edits made here); Delete removes it for good. Nothing reaches the website without an approve. */
+   edits made here); Reject keeps it here, unpublished; Delete removes it for good. Nothing reaches the website without an approve. */
 import { useEffect, useState } from 'react';
-import { Check, Pencil, RefreshCw, Trash2 } from 'lucide-react';
+import { Ban, Check, Pencil, RefreshCw, Trash2 } from 'lucide-react';
 import { api } from '../lib/api.js';
 import { Empty, Field, missing, useUi } from '../lib/ui.jsx';
 
@@ -31,7 +31,16 @@ export default function Inbox() {
     setBusy(null);
     if (!r.ok) return r.status !== 401 && toast(r.data.error || 'Could not approve this review.', 'error');
     setEditing(({ [x.id]: _, ...rest }) => rest);
-    toast(`Published “${(edited || x).name}” to What Our Students Say ✓`);
+    toast(r.data.alreadyPublished ? `“${(edited || x).name}” is already in What Our Students Say — nothing was added.` : `Published “${(edited || x).name}” to What Our Students Say ✓`);
+    load();
+  }
+
+  async function reject(x) {
+    setBusy(x.id);
+    const r = await api(`/api/admin/review-inbox/${x.id}/reject`, { method: 'POST' });
+    setBusy(null);
+    if (!r.ok) return r.status !== 401 && toast(r.data.error || 'Could not reject this review.', 'error');
+    toast(`Rejected “${x.name}” — it stays here and is not published.`);
     load();
   }
 
@@ -44,7 +53,8 @@ export default function Inbox() {
 
   if (error) return <div className="a-panel"><Empty title="Could not load the inbox" text={error} /><div className="text-center"><button className="a-btn a-btn--ghost" onClick={load}>Try again</button></div></div>;
   if (!rows) return <div className="a-panel text-[13px] text-charcoal/50">Loading…</div>;
-  const pending = rows.filter(x => x.status !== 'approved').length;
+  const pending = rows.filter(x => x.status === 'pending').length;
+  const BADGE = { approved: ['Published', 'bg-brand/15 text-emerald-700'], rejected: ['Rejected', 'bg-red-50 text-red-600'], pending: ['Pending', 'bg-amber-100 text-amber-700'] };
 
   return <>
     <div className="mb-4 flex items-center gap-2">
@@ -55,21 +65,29 @@ export default function Inbox() {
       {!rows.length ? <Empty title="Inbox is empty" text="Reviews sent from “Write A Review” on the home page will appear here." /> : (
         <div className="grid gap-3">
           {rows.map(x => {
-            const ed = editing[x.id], approved = x.status === 'approved';
+            const ed = editing[x.id], approved = x.status === 'approved', [badge, tone] = BADGE[x.status] || BADGE.pending;
             return (
-              <article key={x.id} className={`rounded-2xl border border-black/5 p-4 ${approved ? 'bg-white' : 'bg-mint/60'}`}>
+              <article key={x.id} className={`rounded-2xl border border-black/5 p-4 ${x.status === 'pending' ? 'bg-mint/60' : 'bg-white'}`}>
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                   <b className="text-[14px]">{x.name}</b>
                   <span className="text-[14px] text-amber-500" aria-label={`${x.rating} out of 5 stars`}>{'★'.repeat(x.rating)}<span className="text-black/15">{'★'.repeat(5 - x.rating)}</span></span>
                   <span className="text-[12px] text-charcoal/45">{when(x.date)}</span>
-                  <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${approved ? 'bg-brand/15 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>{approved ? 'Published' : 'Pending'}</span>
+                  <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${tone}`}>{badge}</span>
                   <span className="ml-auto flex gap-1.5">
-                    <button type="button" className="a-btn a-btn--ghost a-btn--sm" onClick={() => setEditing(e => ({ ...e, [x.id]: ed ? undefined : { name: x.name, role: '', rating: x.rating, body: x.body } }))}>
-                      <Pencil className="h-3.5 w-3.5" />{ed ? 'Cancel edit' : 'Edit'}
-                    </button>
-                    <button type="button" className="a-btn a-btn--primary a-btn--sm" disabled={busy === x.id} onClick={() => approve(x)}>
-                      <Check className="h-3.5 w-3.5" />{approved ? 'Publish again' : 'Approve'}
-                    </button>
+                    {/* a published review is edited or removed in Student Reviews, so it can't be published twice from here */}
+                    {!approved && <>
+                      <button type="button" className="a-btn a-btn--ghost a-btn--sm" onClick={() => setEditing(e => ({ ...e, [x.id]: ed ? undefined : { name: x.name, role: '', rating: x.rating, body: x.body } }))}>
+                        <Pencil className="h-3.5 w-3.5" />{ed ? 'Cancel edit' : 'Edit'}
+                      </button>
+                      <button type="button" className="a-btn a-btn--primary a-btn--sm" disabled={busy === x.id} onClick={() => approve(x)}>
+                        <Check className="h-3.5 w-3.5" />Approve
+                      </button>
+                    </>}
+                    {x.status === 'pending' && (
+                      <button type="button" className="a-btn a-btn--ghost a-btn--sm" disabled={busy === x.id} onClick={() => reject(x)}>
+                        <Ban className="h-3.5 w-3.5" />Reject
+                      </button>
+                    )}
                     <button type="button" aria-label="Delete" className="rounded-full p-2 text-charcoal/35 transition hover:bg-red-50 hover:text-red-500" onClick={() => remove(x)}><Trash2 className="h-4 w-4" /></button>
                   </span>
                 </div>
